@@ -1,0 +1,70 @@
+import java.io.*;
+import java.net.*;
+import java.util.Random;
+
+class TCPServer {
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(9876);
+        Socket clientSocket = serverSocket.accept();
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+            out.println("Received: " + inputLine);
+        }
+
+        in.close();
+        out.close();
+        clientSocket.close();
+        serverSocket.close();
+    }
+}
+
+class TCPClient {
+    public static void main(String[] args) throws IOException {
+        Socket socket = new Socket("localhost", 9876);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        for (int i = 0; i < 10; i++) {
+            out.println("Packet " + i);
+            System.out.println("Server response: " + in.readLine());
+        }
+
+        in.close();
+        out.close();
+        socket.close();
+    }
+}
+
+class UDPServer {
+    public static void main(String[] args) throws IOException {
+        DatagramSocket socket = new DatagramSocket(9877);
+        byte[] receiveData = new byte[1024];
+
+        while (true) {
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            socket.receive(receivePacket);
+            String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+            System.out.println("Received: " + message);
+        }
+    }
+}
+
+class UDPClient {
+    public static void main(String[] args) throws IOException {
+        DatagramSocket socket = new DatagramSocket();
+        InetAddress IPAddress = InetAddress.getByName("localhost");
+        byte[] sendData;
+
+        for (int i = 0; i < 10; i++) {
+            String message = "Packet " + i;
+            sendData = message.getBytes();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
+            socket.send(sendPacket);
+        }
+
+        socket.close();
+    }
+}
